@@ -1,6 +1,7 @@
 /build/
 /build-*/
 /third_party/
+/.venv-autoas/
 /.cache/
 __pycache__/
 *.pyc

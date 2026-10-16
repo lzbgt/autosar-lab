@@ -64,14 +64,18 @@ find third_party/autoas -iname '*CanIf*' -o -iname '*CanTp*' \
   -o -iname '*Dcm*' -o -iname '*PduR*' | head -60
 ~~~
 
-Upstream documents a Controller Area Network (CAN) diagnostic simulation and commands similar to:
+**Now compiled and tested natively on Arch Linux**, not merely studied. Use the pinned local toolchain and real upstream stack:
 
-~~~text
-scons --app=CanApp
-scons --app=IsoTpSend
+~~~sh
+cd ~/work/autosar-lab
+bash tools/setup-autoas.sh
+bash tools/build-autoas.sh
+python3 tools/test-autoas.py
 ~~~
 
-The documented environment is Windows/MSYS2, and the example's exact build path and platform dependencies must be checked before attempting native Arch builds. It is **not** a drop-in AUTOSAR 4.x Microcontroller Unit (MCU) deployment for H723/M416, nor is its native Linux build guaranteed.
+The actual SCons dependency order is: compile the upstream Basic Software (BSW) `CanApp` target; build `libAsOne.so` with `--lib=AsOne`; then link the real ISO 15765-2 Transport Protocol (ISO-TP) test client `IsoTpSend`. The diagnostic test verified sessions `10 01` and `10 03`, and the multi-frame 13-byte response for Data Identifier (DID) `F1 5B`. Source/module layout, configuration generation and debugging steps are in [the real-stack guide](11-real-autosar-stack.md).
+
+This is a running host example, **not** a drop-in firmware deployment on the STM32H723/AT32M416. The host AutoAS executable uses its own operating-system abstraction, not the separate Trampoline kernel. Physical board Microcontroller Abstraction Layer (MCAL) ports and full Runtime Environment (RTE) generation remain unverified.
 
 Trace a Unified Diagnostic Services (UDS) 0x10 request in these sources: simulator Controller Area Network (CAN) driver → CAN Interface (CanIf) → CAN Transport Layer (CanTp) → Protocol Data Unit Router (PduR) → Diagnostic Communication Manager (Dcm); then trace 0x50 response. Compare with small teaching functions in `src/core` and identify what we omitted: configuration callbacks, memory handling, state machines, development errors, Electronic Control Unit (ECU) lifecycle and thread protection.
 

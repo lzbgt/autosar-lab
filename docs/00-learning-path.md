@@ -48,6 +48,7 @@ Times are suggested study effort, not promises of automatic completion.
 8. `08-conformance-and-next-steps.md` — production distinctions and realistic extensions.
 9. `09-glossary-and-references.md` — definitions and official reading.
 10. `10-troubleshooting.md` — common failures and a debug decision tree.
+11. `11-real-autosar-stack.md` — compile real AutoAS Basic Software (BSW), run its configuration generators, and verify actual Unified Diagnostic Services (UDS) transport.
 
 ## How to practice effectively
 
