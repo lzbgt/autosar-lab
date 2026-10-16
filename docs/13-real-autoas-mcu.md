@@ -106,7 +106,7 @@ Three different kinds of code must not be conflated:
 | `board_mcan.c` | **Custom hardware adapter**, not a conformant Microcontroller Abstraction Layer (MCAL) driver | Emulated Cortex-M7 loads/stores to M_CAN registers, FIFO state and messages |
 | `tp_app.c`'s `App_StartOfReception()`, `App_CopyRxData()`, and service handler | **Test-harness upper application**, not a genuine Diagnostic Communication Manager (Dcm) | Maps request `22 F1 5B` to a fixed 13-byte positive response, without security/session/DTC services |
 
-The host AutoAS example in [chapter 11](11-real-autosar-stack.md) still contains the genuine Diagnostic Communication Manager (Dcm). In the *emulated MCU firmware*, however, the Diagnostic Communication Manager and a generated Runtime Environment (RTE) have **not** yet been integrated. Likewise, this Cortex-M7 firmware uses a polling loop, **not** the independently verified Trampoline real-time Operating System (OS).
+The host AutoAS example in [chapter 11](11-real-autosar-stack.md) still contains the genuine Diagnostic Communication Manager (Dcm). In *this chapter’s emulated MCU firmware*, the Diagnostic Communication Manager (Dcm) and generated Runtime Environment (RTE) are still absent. [Chapter 14](14-real-dcm-mcu.md) uses a separate verified server ELF with the real Diagnostic Communication Manager enabled. Likewise, this Cortex-M7 firmware uses a polling loop, **not** the independently verified Trampoline real-time Operating System (OS).
 
 ## 3. Debugging practical failures
 
@@ -134,7 +134,7 @@ Because this example is compiled for Cortex-M7, you can use `arm-none-eabi-objdu
 
 This is a verified **three-module embedded Basic Software communication integration**, not a complete production AUTOSAR Electronic Control Unit (ECU).
 
-The remaining work includes: real Diagnostic Communication Manager (Dcm) linkage and configuration; an actual generated Runtime Environment (RTE) connection to a Software Component (SWC); an integrated Trampoline Operating System (OS) task/event/timing configuration; complete CAN-driver error handling and transmit queues; and exact STM32H723/AT32M416 pin, clock and peripheral configurations. The Renode model logs nominal/data bit-timing writes as partially unhandled, so **500 kbit/s arbitration or 2 Mbit/s data-phase electrical timing has not been measured**.
+The real Diagnostic Communication Manager (Dcm) is now verified separately in [chapter 14](14-real-dcm-mcu.md). The remaining work includes an actual generated Runtime Environment (RTE) connection to a Software Component (SWC); an integrated Trampoline Operating System (OS) task/event/timing configuration; complete CAN-driver error handling and transmit queues; and exact STM32H723/AT32M416 pin, clock and peripheral configurations. The Renode model logs nominal/data bit-timing writes as partially unhandled, so **500 kbit/s arbitration or 2 Mbit/s data-phase electrical timing has not been measured**.
 
 A physical STM32H723 + AT32M416 CAN FD network remains the final independent verification gate, with external transceivers, termination and a CAN FD-capable analyzer. Refer to [hardware bring-up](07-mcu-bringup.md).
 

@@ -32,6 +32,7 @@ We use three independent tracks:
 | L5 (half-day) | Trace real Basic Software (BSW) in AutoAS and its documented diagnostic demo | Draw Diagnostic Communication Manager (Dcm) ⇄ Protocol Data Unit Router (PduR) ⇄ CAN Transport Layer (CanTp) ⇄ CAN Interface (CanIf) ⇄ Can |
 | L6 (emulated MCU) | Run the real Trampoline Cortex-M4 OS on virtual STM32F407 and real Cortex-M7 register-level CAN FD sender/receiver firmware on two virtual STM32H743s | GPIO D15 task transitions and paired `0xCAFEFD10` / `0xCAFECC08` diagnostic memory markers; no physical bit-rate claim |
 | L6.1 (real embedded Basic Software) | Compile AutoAS CAN Interface (CanIf), CAN Transport Layer (CanTp), and Protocol Data Unit Router (PduR) from genuine upstream code for two virtual STM32H743 Cortex-M7 processors | CAN FD and Classical CAN routing; real transport segmentation/reassembly; both hardware SRAM success markers and no development-error reports |
+| L6.2 (real embedded diagnostics) | Run genuine AutoAS Diagnostic Communication Manager (Dcm), Diagnostic Service Dispatcher (Dsd), Diagnostic Session Layer (Dsl) and Diagnostic Service Processing (Dsp) on a virtual STM32H743 | Verify `22 F1 5B`, `10 03` and `22 F1 99` responses with independent CPU memory and CAN-frame counters |
 | L7 (1–2 days) | Build vendor Hardware Abstraction Layer (HAL) Controller Area Network (CAN) 2.0 on H723 and M416, observe packets | Verified two-node communication at 500 kbit/s |
 | L8 (1–2 days) | Enable ISO Controller Area Network Flexible Data-Rate (CAN FD) 500 kbit/s nominal + 2 Mbit/s data | Frame trace + error counters + handling tests |
 | L9 (advanced) | Integrate Operating System (OS), configuration, Microcontroller Abstraction Layer (MCAL) and Basic Software (BSW) on Microcontroller Unit (MCU) | Real task scheduling, memory map and diagnostic timing metrics |
@@ -53,6 +54,7 @@ Times are suggested study effort, not promises of automatic completion.
 11. `11-real-autosar-stack.md` — compile real AutoAS Basic Software (BSW), run its configuration generators, and verify actual Unified Diagnostic Services (UDS) transport.
 12. `12-mcu-simulation.md` — install Renode, compile genuine Cortex-M4 Trampoline firmware, exchange Controller Area Network Flexible Data-Rate (CAN FD) frames through two emulated Cortex-M7 controllers, and verify real peripheral registers.
 13. `13-real-autoas-mcu.md` — execute actual AutoAS Basic Software (BSW) CAN Interface (CanIf), CAN Transport Layer (CanTp), and Protocol Data Unit Router (PduR) in Cortex-M7 firmware with real configured routing and a segmented diagnostic transfer.
+14. `14-real-dcm-mcu.md` — link actual AutoAS Diagnostic Communication Manager (Dcm) and test correct DID, session and negative responses on emulated ARM firmware.
 
 ## How to practice effectively
 

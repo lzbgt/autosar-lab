@@ -24,7 +24,14 @@
 #error "Define SIM_ROLE=0 (tester) or SIM_ROLE=1 (server)"
 #endif
 
+/* Optional Dcm-server tester variants, built only by the Dcm lab runner. */
+#if SIM_ROLE == 0 && defined(AUTOAS_TEST_SESSION)
+#define STATUS_PASS_TESTER 0xCAFE1003u
+#elif SIM_ROLE == 0 && defined(AUTOAS_TEST_UNKNOWN_DID)
+#define STATUS_PASS_TESTER 0xCAFE2231u
+#else
 #define STATUS_PASS_TESTER 0xCAFE220Du
+#endif
 #define STATUS_PASS_SERVER 0xCAFE220Eu
 #define STATUS_BAD_TP 0xBAD20001u
 
@@ -60,7 +67,13 @@ static const uint8_t tx_payload[] = {
 #else
 #define RX_IDENTIFIER 0x732u
 #define TX_IDENTIFIER 0x731u
+#if defined(AUTOAS_TEST_SESSION)
+static const uint8_t tx_payload[] = {0x10, 0x03};
+#elif defined(AUTOAS_TEST_UNKNOWN_DID)
+static const uint8_t tx_payload[] = {0x22, 0xF1, 0x99};
+#else
 static const uint8_t tx_payload[] = {0x22, 0xF1, 0x5B};
+#endif
 #endif
 
 static const CanIf_RxPduType rx_table[1] = {
@@ -140,16 +153,23 @@ void App_RxIndication(PduIdType id, Std_ReturnType result)
         MCU_DEBUG[0] = STATUS_BAD_TP;
     }
 #else
-    if(rx_length == sizeof(tx_payload) + 10u &&
-       rx_buffer[0] == 0x62 && rx_buffer[1] == 0xF1 && rx_buffer[2] == 0x5B) {
-        unsigned valid = 1u;
-        for(unsigned i = 3u; i < 13u; ++i) {
-            if(rx_buffer[i] != 0xA5u) { valid = 0u; }
+#if defined(AUTOAS_TEST_SESSION)
+    const uint8_t expected[] = {0x50, 0x03, 0x00, 0x32, 0x01, 0xF4};
+#elif defined(AUTOAS_TEST_UNKNOWN_DID)
+    const uint8_t expected[] = {0x7F, 0x22, 0x31};
+#else
+    const uint8_t expected[] = {
+        0x62, 0xF1, 0x5B, 0xA5, 0xA5, 0xA5, 0xA5,
+        0xA5, 0xA5, 0xA5, 0xA5, 0xA5, 0xA5,
+    };
+#endif
+    unsigned valid = (rx_length == sizeof(expected));
+    if(valid) {
+        for(unsigned i = 0u; i < sizeof(expected); ++i) {
+            if(rx_buffer[i] != expected[i]) { valid = 0u; }
         }
-        MCU_DEBUG[0] = valid ? STATUS_PASS_TESTER : STATUS_BAD_TP;
-    } else {
-        MCU_DEBUG[0] = STATUS_BAD_TP;
     }
+    MCU_DEBUG[0] = valid ? STATUS_PASS_TESTER : STATUS_BAD_TP;
 #endif
 }
 BufReq_ReturnType App_CopyTxData(PduIdType id, const PduInfoType *info,

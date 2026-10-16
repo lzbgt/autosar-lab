@@ -1,0 +1,40 @@
+# Real AutoAS Dcm + PduR + CanTp + CanIf on STM32H743 server Cortex-M7.
+# Verified diagnostic tester is unchanged from chapter 13. Both use Renode M_CAN.
+emulation CreateCANHub "canHub"
+
+mach create "tester"
+machine LoadPlatformDescription @platforms/cpus/stm32h743.repl
+sysbus LoadELF @build/emu/h743-autoas-tp/tester.elf
+connector Connect fdcan1 canHub
+
+mach create "server"
+machine LoadPlatformDescription @platforms/cpus/stm32h743.repl
+sysbus LoadELF @build/emu/h743-autoas-dcm/server.elf
+connector Connect fdcan1 canHub
+
+emulation SetGlobalQuantum "0.000025"
+emulation RunFor "1.2"
+
+mach set "tester"
+sysbus ReadDoubleWord 0x24000000
+sysbus ReadDoubleWord 0x2400001C
+sysbus ReadDoubleWord 0x24000020
+sysbus ReadDoubleWord 0x24000024
+sysbus ReadDoubleWord 0x24000028
+sysbus ReadDoubleWord 0x2400002C
+sysbus ReadDoubleWord 0x24000030
+sysbus ReadDoubleWord 0x24000034
+sysbus ReadDoubleWord 0x24000038
+sysbus ReadDoubleWord 0x2400003C
+
+mach set "server"
+sysbus ReadDoubleWord 0x24000000
+sysbus ReadDoubleWord 0x2400001C
+sysbus ReadDoubleWord 0x24000020
+sysbus ReadDoubleWord 0x24000024
+sysbus ReadDoubleWord 0x24000028
+sysbus ReadDoubleWord 0x2400002C
+sysbus ReadDoubleWord 0x24000030
+sysbus ReadDoubleWord 0x24000034
+sysbus ReadDoubleWord 0x24000038
+sysbus ReadDoubleWord 0x2400003C

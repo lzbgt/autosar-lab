@@ -100,7 +100,7 @@ For example, direct emulator-side state is at `0x24000000` and its following wor
 
 Also, the two exercises are **not yet one integrated AutoAS Basic Software (BSW) plus Trampoline OS firmware**. The STM32H743 register-driver lab is deliberately a minimal peripheral test, **not** an AUTOSAR Microcontroller Abstraction Layer (MCAL). The existing real AutoAS Basic Software (BSW), protocol stack and generated configuration are exercised on Linux in [chapter 11](11-real-autosar-stack.md). Deploying them to these virtual boards still requires target-specific startup, Operating System (OS) mapping, Microcontroller Abstraction Layer (MCAL) compatibility and configuration work.
 
-**The next integration step now works:** [chapter 13](13-real-autoas-mcu.md) links unchanged AutoAS CAN Interface (CanIf), CAN Transport Layer (CanTp), and Protocol Data Unit Router (PduR) code to a Cortex-M7 M_CAN adapter and validates a segmented diagnostic response between two virtual STM32H743 controllers. Integration of the actual Diagnostic Communication Manager (Dcm), Trampoline Operating System (OS), and the exact STM32H723/AT32M416 peripherals remains outstanding.
+**The next integration step now works:** [chapter 13](13-real-autoas-mcu.md) links unchanged AutoAS CAN Interface (CanIf), CAN Transport Layer (CanTp), and Protocol Data Unit Router (PduR) code to a Cortex-M7 M_CAN adapter and validates a segmented diagnostic response between two virtual STM32H743 controllers. [Chapter 14](14-real-dcm-mcu.md) now runs the genuine Diagnostic Communication Manager (Dcm) for three verified services on Cortex-M7. Integrating Trampoline Operating System (OS) with this firmware and validating the exact STM32H723/AT32M416 peripherals remain outstanding.
 
 ## Reference material
 

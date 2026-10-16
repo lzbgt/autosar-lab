@@ -8,4 +8,6 @@ echo "=== Two virtual STM32H743 CAN FD controllers ==="
 bash tools/run-h743-fdcan.sh
 echo "=== Genuine AutoAS CAN Interface, CAN Transport Layer, Protocol Data Unit Router ==="
 bash tools/run-real-autoas-mcu.sh
-echo "PASS: Cortex-M4 Trampoline OS; Cortex-M7 CAN FD; genuine AutoAS CanIf, CanTp and PduR"
+echo "=== Genuine AutoAS Diagnostic Communication Manager on Cortex-M7 ==="
+bash tools/run-h743-autoas-dcm.sh
+echo "PASS: Cortex-M4 Trampoline OS, Cortex-M7 CAN FD, genuine AutoAS CanIf/CanTp/PduR/Dcm"
