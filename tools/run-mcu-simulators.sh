@@ -10,4 +10,6 @@ echo "=== Genuine AutoAS CAN Interface, CAN Transport Layer, Protocol Data Unit 
 bash tools/run-real-autoas-mcu.sh
 echo "=== Genuine AutoAS Diagnostic Communication Manager on Cortex-M7 ==="
 bash tools/run-h743-autoas-dcm.sh
-echo "PASS: Cortex-M4 Trampoline OS, Cortex-M7 CAN FD, genuine AutoAS CanIf/CanTp/PduR/Dcm"
+echo "=== Real CAN Transport Layer missing Flow Control and same-server recovery ==="
+bash tools/run-h743-autoas-fault.sh
+echo "PASS: Trampoline OS, Cortex-M7 CAN FD, genuine AutoAS diagnostics and N_Bs timeout/recovery"

@@ -13,3 +13,9 @@ __pycache__/
 *.log
 .vscode/
 .idea/
+
+# Never publish developer credentials or personal configuration.
+/.env
+/.env.*
+!/.env.example
+/.secrets/

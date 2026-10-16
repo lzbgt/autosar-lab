@@ -115,7 +115,11 @@ const PduR_ConfigType PduR_Config = {
 int main(void)
 {
     volatile uint32_t *const diag = MCU_DEBUG;
+#ifdef AUTOAS_TEST_DROP_FC
+    for(unsigned i = 0u; i < 25u; ++i) { diag[i] = 0u; }
+#else
     for(unsigned i = 0u; i < 19u; ++i) { diag[i] = 0u; }
+#endif
 
     CanIf_Init(0);
     PduR_Init(0);
@@ -148,6 +152,33 @@ int main(void)
          * Exact contents and ISO-TP framing are checked independently on
          * the tester MCU. No success marker is based on transmit-request alone. */
         Dcm_ContextType *context = Dcm_GetContext();
+#ifdef AUTOAS_TEST_DROP_FC
+        /* An FC arrives in real M_CAN RX FIFO but board_mcan.c suppresses
+         * forwarding to CanIf. Observe upstream CanTp WAIT_FIRST_FC and
+         * its real N_Bs timeout/reset, never forge a failed callback. */
+        if(tp_context[0].state == CANTP_WAIT_FIRST_FC && diag[20] == 0u) {
+            diag[20] = systick_ms;
+        }
+        if(diag[20] != 0u && diag[21] == 0u &&
+           tp_context[0].state == CANTP_IDLE) {
+            diag[21] = systick_ms;
+            diag[22] = diag[21] - diag[20];
+        }
+        if(diag[21] != 0u && context->txBufferState == DCM_BUFFER_IDLE &&
+           diag[19] == 1u && diag[7] == 1u &&
+           diag[8] >= 1u && diag[9] == 0u) {
+            diag[23] = 1u;
+            diag[0] = 0xFA17FC00u; /* Real transport timeout and Dcm idle. */
+        }
+        /* The later real session response is a distinct success; a
+         * mismatched condition MUST NOT count the aborted DID as success. */
+        if(diag[23] != 0u && diag[15] == 1u && diag[8] == 2u &&
+           context->txBufferState == DCM_BUFFER_IDLE &&
+           context->rxBufferState == DCM_BUFFER_IDLE) {
+            diag[24] = 1u;
+            diag[0] = 0xFA17C003u; /* Same ECU served UDS 10 03 after N_Bs. */
+        }
+#else
         if(diag[8] >= 1u && diag[9] == 0u &&
            context->txBufferState == DCM_BUFFER_IDLE &&
            context->rxBufferState == DCM_BUFFER_IDLE) {
@@ -163,6 +194,7 @@ int main(void)
                 diag[10] = 1u;
             }
         }
+#endif
         mcan_board_delay(1000u);
     }
 }

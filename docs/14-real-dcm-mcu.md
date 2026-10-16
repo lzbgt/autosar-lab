@@ -145,8 +145,8 @@ The successful end-to-end experiment proves that **real embedded AutoAS CAN Inte
 
 It does **not** prove AUTOSAR certification, correct hardware bit timing, physical transceiver behavior, real STM32H723 peripheral clocks and memory layout, or AT32M416 compatibility. The simulator models an STM32H743 rather than the specific hardware you own. The emulated driver does not implement complete bus-off recovery, transmit queue management, interrupts and timeout supervision.
 
-There is still **no single firmware image integrating Trampoline Operating System (OS), a generated Runtime Environment (RTE), and all these Basic Software modules**. The actual 1 ms/10 ms emulated timer cadence is now verified, but task priorities, interrupt interference, worst-case execution time and full timeout/fault injection testing remain outstanding.
+There is still **no single firmware image integrating Trampoline Operating System (OS), a generated Runtime Environment (RTE), and all these Basic Software modules**. The actual 1 ms/10 ms emulated timer cadence is now verified, but task priorities, interrupt interference, worst-case execution time and broader timeout/fault-injection coverage remain outstanding. The specific missing-Flow-Control timeout and subsequent same-server recovery are now verified in [chapter 15](15-iso-tp-fault-recovery.md).
 
-The next useful engineering step is to integrate Trampoline operating-system tasks with these proven diagnostic modules, test timeout and error recovery under injected fault conditions, and then port the hardware driver to STM32H723 and AT32M416 for physical bench verification.
+The next useful engineering step is to integrate Trampoline operating-system tasks with these proven diagnostic modules, extend the fault tests to bus-off and recovery policies, and then port the hardware driver to STM32H723 and AT32M416 for physical bench verification.
 
 **Licensing:** The pinned AutoAS source is GPL version 3/commercial dual-licensed. The upstream checkout remains separate, unchanged and Git-ignored. Renode and Trampoline have their own licenses.

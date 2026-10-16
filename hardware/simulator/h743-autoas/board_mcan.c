@@ -130,6 +130,17 @@ void mcan_board_poll(void)
      * Never alter received data or the upper transport state machine. */
     const unsigned pci_type = buffer[0] >> 4;
     if(pci_type < 4u) { MCU_DEBUG[11u + pci_type]++; }
+#ifdef AUTOAS_TEST_DROP_FC
+    /* Fault injection at the *receiver* driver-to-CanIf boundary. Renode
+     * has delivered a real FC to M_CAN FIFO; the driver deliberately does
+     * not pass it to the genuine AutoAS CAN Interface. The physical wire
+     * layer, acknowledgements and fault timing are not simulated. */
+    if(id == 0x731u && pci_type == 3u) {
+        MCU_DEBUG[19]++;       /* Raw M_CAN RX observed one dropped FC. */
+        *reg32(RXF0A) = index; /* Release the real FIFO element. */
+        return;
+    }
+#endif
     const Can_HwType mailbox = {
         .CanId = id | ((h1 & FDF) ? CAN_CANFD_ID_TYPE : 0u),
         .Hoh = 0u, .ControllerId = 0u
