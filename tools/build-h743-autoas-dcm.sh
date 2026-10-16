@@ -37,7 +37,7 @@ for entry in "communication/CanIf/CanIf" "communication/CanTp/CanTp" \
 done
 "$ARM_CC" -mcpu=cortex-m7 -mthumb -mfloat-abi=soft -nostdlib \
   "-Wl,-T,hardware/simulator/h743-fdcan/memory.ld" -Wl,--gc-sections \
-  hardware/simulator/h743-fdcan/startup.S \
+  hardware/simulator/h743-autoas-dcm/startup-systick.S \
   "$out/dcm_server.o" "$out/dcm_config.o" "$out/board_mcan.o" \
   "$out/CanIf.o" "$out/CanTp.o" "$out/PduR.o" "$out/PduR_CanTp.o" \
   "$out/PduR_Dcm.o" "$out/Dcm.o" "$out/Dcm_Dsd.o" "$out/Dcm_Dsl.o" \

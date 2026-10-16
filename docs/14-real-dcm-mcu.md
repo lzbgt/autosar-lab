@@ -123,14 +123,30 @@ The actual `Dcm_DspReadDataByIdentifier()` determines whether `F1 5B` is allowed
 
 With Renode's GDB integration, useful breakpoints are `Dcm_MainFunction()`, `Dsd_HandleRequest()`, `Dcm_DspReadDataByIdentifier()` and `Dcm_DspSessionControl()`. Some helpers are internal static functions, so compile with symbols (`-g3`) and inspect source or symbols directly.
 
-## Step 5 — Know exactly what remains unverified
+## Step 5 — Verify actual Cortex-M7 SysTick timing
+
+The emulator server now has a separate `startup-systick.S` exception vector, so a real Cortex-M7 **SysTick interrupt** drives a 1 millisecond counter. `CanTp_MainFunction_Fast()` runs in main context once per elapsed tick, while `CanTp_MainFunction()` and `Dcm_MainFunction()` run every tenth tick. The interrupt handler itself only updates a counter, avoiding Basic Software (BSW) service reentrancy.
+
+Renode's STM32H743 starts with a **64 MHz reset-clock configuration** rather than the maximum configured 480 MHz clock. Initially setting the SysTick reload for 480 MHz produced only 159 interrupts in 1.2 seconds, exposing the clock mismatch. Using `LOAD=63999` (=64 MHz /1000 − 1) produced the measured timing:
+
+| Event over 1.2 seconds of simulated time | Observed count |
+| --- | ---: |
+| Emulated SysTick 1 ms interrupts | 1,200 |
+| Real CAN Transport Layer (CanTp) fast service executions | 1,199 |
+| CAN Transport Layer (CanTp) and Diagnostic Communication Manager (Dcm) 10 ms main executions | 119 |
+
+The Renode scenario samples these counts directly from server Static Random-Access Memory (SRAM) words 16–18 at addresses `0x24000040`, `0x24000044` and `0x24000048`. The regression fails if the SysTick frequency, fast-service count or ten-to-one main-service ratio is wrong. All three diagnostic transactions continue to pass.
+
+These are **verified virtual-time scheduling counts**, not measured processor execution deadlines on physical STM32H723 hardware. They do not by themselves validate worst-case execution times, bus-off fault recovery or deployment on Trampoline.
+
+## Step 6 — Know exactly what remains unverified
 
 The successful end-to-end experiment proves that **real embedded AutoAS CAN Interface (CanIf), CAN Transport Layer (CanTp), Protocol Data Unit Router (PduR) and Diagnostic Communication Manager (Dcm) functionality** can run together on Cortex-M7 and exchange diagnostic messages using an emulated M_CAN peripheral.
 
 It does **not** prove AUTOSAR certification, correct hardware bit timing, physical transceiver behavior, real STM32H723 peripheral clocks and memory layout, or AT32M416 compatibility. The simulator models an STM32H743 rather than the specific hardware you own. The emulated driver does not implement complete bus-off recovery, transmit queue management, interrupts and timeout supervision.
 
-There is still **no single firmware image integrating Trampoline Operating System (OS), a generated Runtime Environment (RTE), and all these Basic Software modules**. The Diagnostic Communication Manager (Dcm) and CAN Transport Layer (CanTp) `MainFunction()` calls use a polling-loop schedule; the nominal 10 ms period and ISO-TP timeouts therefore have **not** been proven using an actual periodic interrupt.
+There is still **no single firmware image integrating Trampoline Operating System (OS), a generated Runtime Environment (RTE), and all these Basic Software modules**. The actual 1 ms/10 ms emulated timer cadence is now verified, but task priorities, interrupt interference, worst-case execution time and full timeout/fault injection testing remain outstanding.
 
-The next useful engineering step is to connect these proven communication modules to a real emulated hardware-timer-driven schedule, then run the same three diagnostic tests including timing, timeout and recovery cases. After that, integrate Trampoline task scheduling and port the hardware driver to STM32H723 and AT32M416 for physical bench verification.
+The next useful engineering step is to integrate Trampoline operating-system tasks with these proven diagnostic modules, test timeout and error recovery under injected fault conditions, and then port the hardware driver to STM32H723 and AT32M416 for physical bench verification.
 
 **Licensing:** The pinned AutoAS source is GPL version 3/commercial dual-licensed. The upstream checkout remains separate, unchanged and Git-ignored. Renode and Trampoline have their own licenses.

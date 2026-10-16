@@ -22,6 +22,29 @@
 #define SERVER_PASS_SESSION 0xCAFE1003u
 #define SERVER_PASS_REJECTION 0xCAFE2231u
 #define SERVER_ERROR 0xBAD200DCu
+#define SYSTICK_CTRL (*(volatile uint32_t *)0xE000E010u)
+#define SYSTICK_LOAD (*(volatile uint32_t *)0xE000E014u)
+#define SYSTICK_VAL  (*(volatile uint32_t *)0xE000E018u)
+/* Cortex-M7 SysTick uses the *current* clock, not the 480 MHz maximum.
+ * The virtual H743 boots on a 64 MHz HSI reset clock until configured.
+ * Measurement: 479999 reload yielded only 159 ticks in 1.2 virtual s.
+ * At reset clock 64 MHz, reload=63999 is the true 1 ms period.
+ * No H7 PLL configuration or electrical oscillator is modeled here. */
+#define SYSTICK_RESET_CLOCK_HZ 64000000u
+#define SYSTICK_ONE_MS_RELOAD (SYSTICK_RESET_CLOCK_HZ / 1000u - 1u)
+static volatile uint32_t systick_ms;
+void SysTick_Handler(void)
+{
+    systick_ms++;
+    MCU_DEBUG[16] = systick_ms;
+}
+static void start_systick(void)
+{
+    SYSTICK_CTRL = 0u;
+    SYSTICK_LOAD = SYSTICK_ONE_MS_RELOAD;
+    SYSTICK_VAL = 0u;
+    SYSTICK_CTRL = 7u; /* ENABLE, TICKINT, CLKSOURCE=CPU */
+}
 
 static uint8_t tp_data[64];
 static CanTp_ChannelContextType tp_context[1];
@@ -92,7 +115,7 @@ const PduR_ConfigType PduR_Config = {
 int main(void)
 {
     volatile uint32_t *const diag = MCU_DEBUG;
-    for(unsigned i = 0u; i < 16u; ++i) { diag[i] = 0u; }
+    for(unsigned i = 0u; i < 19u; ++i) { diag[i] = 0u; }
 
     CanIf_Init(0);
     PduR_Init(0);
@@ -104,14 +127,22 @@ int main(void)
         for(;;) { __asm__ volatile("wfi"); }
     }
     diag[0] = 0x70000004u;
-    unsigned iteration = 0u;
+    start_systick();
+    uint32_t serviced_ms = 0u;
     for(;;) {
         mcan_board_poll();
-        CanTp_MainFunction_Fast();
-        if(++iteration == 5000u) {
-            iteration = 0u;
-            CanTp_MainFunction();
-            Dcm_MainFunction();
+        /* Interrupt tracks real emulated millisecond ticks. All BSW work
+         * stays in main context to avoid concurrent service reentrancy. */
+        const uint32_t sampled_ms = systick_ms;
+        while(serviced_ms != sampled_ms) {
+            serviced_ms++;
+            CanTp_MainFunction_Fast();
+            diag[17]++;
+            if((serviced_ms % 10u) == 0u) {
+                CanTp_MainFunction();
+                Dcm_MainFunction();
+                diag[18]++;
+            }
         }
         /* Mark success only after real Dcm response transport has confirmed.
          * Exact contents and ISO-TP framing are checked independently on

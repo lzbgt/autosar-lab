@@ -38,3 +38,8 @@ sysbus ReadDoubleWord 0x24000030
 sysbus ReadDoubleWord 0x24000034
 sysbus ReadDoubleWord 0x24000038
 sysbus ReadDoubleWord 0x2400003C
+
+# Real 1ms SysTick IRQ and 10ms BSW MainFunction counters on server.
+sysbus ReadDoubleWord 0x24000040
+sysbus ReadDoubleWord 0x24000044
+sysbus ReadDoubleWord 0x24000048
