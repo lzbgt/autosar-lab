@@ -220,7 +220,7 @@ const PduR_ConfigType PduR_Config = {
 
 int main(void)
 {
-    for(unsigned i = 0u; i < 12u; ++i) { MCU_DEBUG[i] = 0u; }
+    for(unsigned i = 0u; i < 15u; ++i) { MCU_DEBUG[i] = 0u; }
     CanIf_Init(0);
     PduR_Init(0);
     CanTp_Init(0);

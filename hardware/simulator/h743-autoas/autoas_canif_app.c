@@ -100,7 +100,7 @@ static void app_tx_confirmation(PduIdType txPdu, Std_ReturnType result)
 int main(void)
 {
     volatile uint32_t *diag = MCU_DEBUG;
-    for(unsigned i = 0u; i < 12u; ++i) { diag[i] = 0u; }
+    for(unsigned i = 0u; i < 15u; ++i) { diag[i] = 0u; }
     CanIf_Init(0);
     if(CanIf_SetControllerMode(0u, CAN_CS_STARTED) != E_OK ||
        CanIf_SetPduMode(0u, CANIF_ONLINE) != E_OK) {

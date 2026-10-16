@@ -22,9 +22,13 @@ def main() -> int:
     content, values = read_log(log)
     if "[ERROR]" in content or "[FATAL]" in content:
         raise ValueError("Renode logged an emulator error")
-    if len(values) != 10:
-        raise ValueError(f"Expected ten independent CPU memory reads, got {values!r}")
-    first, second = values[:5], values[5:]
+    words_per_cpu = 5 if mode == "canif" else 9
+    expected_count = 2 * words_per_cpu
+    if len(values) != expected_count:
+        raise ValueError(
+            f"Expected {expected_count} independent CPU memory reads, got {values!r}"
+        )
+    first, second = values[:words_per_cpu], values[words_per_cpu:]
     if mode == "canif":
         # [finished status, raw M_CAN frame flags, Rx PDU callback count,
         #  TX confirmation count, development-error count] per CPU.
@@ -35,8 +39,11 @@ def main() -> int:
     else:
         # [finished status, completed UDS PDU count, frame confirmations,
         #  development-error count, application TX completion count]
-        a_ok = [0xCAFE220D, 1, 2, 0, 1]
-        b_ok = [0xCAFE220E, 1, 2, 0, 1]
+        # Last four counters come directly from the M_CAN received bytes,
+        # indexed by ISO-TP PCI nibble: SF=0, FF=1, CF=2, FC=3.
+        # Tester receives FF+CF; server receives SF+FC.
+        a_ok = [0xCAFE220D, 1, 2, 0, 1, 0, 1, 1, 0]
+        b_ok = [0xCAFE220E, 1, 2, 0, 1, 1, 0, 0, 1]
     for label, sample, expected in (
         ("sender/tester", first, a_ok), ("receiver/server", second, b_ok)
     ):
@@ -51,6 +58,7 @@ def main() -> int:
     else:
         print("PASS: original AutoAS CanIf.c + CanTp.c + PduR.c on both Cortex-M7 CPUs")
         print("PASS: SF request 22 F1 5B; FF/FC/CF transfer of 13-byte 62 F1 5B + 10*A5 response")
+        print("PASS: MCU raw M_CAN RX frame counters — tester FF=1 CF=1; server SF=1 FC=1")
     if mode == "canif":
         print("PASS: one CAN Interface receive callback per endpoint, zero development-error reports")
     else:

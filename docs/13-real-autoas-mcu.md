@@ -24,7 +24,7 @@ Both exercises cross-compile with `arm-none-eabi-gcc`, link with a real Cortex-M
 | A: CAN Interface only | `sender.elf` and `receiver.elf` under `build/emu/h743-autoas/` | Sender 16-byte CAN FD → receiver callback → eight-byte Classical CAN response → sender callback; correct flags, payload and confirmations |
 | B: Full transport/routing subset | `tester.elf` and `server.elf` under `build/emu/h743-autoas-tp/` | Actual Unified Diagnostic Services (UDS)-shaped request `22 F1 5B` and **13-byte** response `62 F1 5B` + ten `A5` bytes over real ISO-TP First/Flow Control/Consecutive Frames |
 
-The scripts compare **actual CPU-written emulated Static Random-Access Memory (SRAM)** values and exit nonzero if a callback fails. Merely generating an ELF or successfully launching Renode does not pass the test.
+The scripts compare **actual CPU-written emulated Static Random-Access Memory (SRAM)** values and exit nonzero if a callback fails. For Stage B, the CAN driver also counts raw received ISO-TP Protocol Control Information (PCI) frame types *before* calling the CAN Interface (CanIf): the tester sees one First Frame and one Consecutive Frame; the server sees one Single Frame and one Flow Control frame. These independent counts are checked, not merely described as expected protocol behavior. Merely generating an ELF or successfully launching Renode does not pass the test.
 
 ### Stage A: real AutoAS CAN Interface
 

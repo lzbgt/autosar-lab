@@ -1,4 +1,4 @@
-# Genuine AutoAS CanTp + CanIf on virtual H743s; PduR/Dcm are not linked.
+# Genuine upstream AutoAS CanIf, CanTp and PduR on virtual H743s; Dcm is not linked.
 emulation CreateCANHub "canHub"
 
 mach create "tester"
@@ -20,6 +20,10 @@ sysbus ReadDoubleWord 0x2400001C
 sysbus ReadDoubleWord 0x24000020
 sysbus ReadDoubleWord 0x24000024
 sysbus ReadDoubleWord 0x24000028
+sysbus ReadDoubleWord 0x2400002C
+sysbus ReadDoubleWord 0x24000030
+sysbus ReadDoubleWord 0x24000034
+sysbus ReadDoubleWord 0x24000038
 
 mach set "server"
 sysbus ReadDoubleWord 0x24000000
@@ -27,3 +31,7 @@ sysbus ReadDoubleWord 0x2400001C
 sysbus ReadDoubleWord 0x24000020
 sysbus ReadDoubleWord 0x24000024
 sysbus ReadDoubleWord 0x24000028
+sysbus ReadDoubleWord 0x2400002C
+sysbus ReadDoubleWord 0x24000030
+sysbus ReadDoubleWord 0x24000034
+sysbus ReadDoubleWord 0x24000038

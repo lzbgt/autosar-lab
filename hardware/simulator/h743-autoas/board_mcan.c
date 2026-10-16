@@ -125,6 +125,11 @@ void mcan_board_poll(void)
         uint32_t value = rx[2u + i / 4u];
         buffer[i] = (uint8_t)(value >> (8u * (i % 4u)));
     }
+    /* MCU-observed ISO-TP Protocol Control Information high nibbles:
+     * Single=0, First=1, Consecutive=2, FlowControl=3.
+     * Never alter received data or the upper transport state machine. */
+    const unsigned pci_type = buffer[0] >> 4;
+    if(pci_type < 4u) { MCU_DEBUG[11u + pci_type]++; }
     const Can_HwType mailbox = {
         .CanId = id | ((h1 & FDF) ? CAN_CANFD_ID_TYPE : 0u),
         .Hoh = 0u, .ControllerId = 0u
