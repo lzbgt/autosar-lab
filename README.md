@@ -17,9 +17,10 @@ bash tools/build-autoas.sh            # actual AutoAS BSW and code generators
 python3 tools/test-autoas.py          # real AutoAS CAN/ISO-TP/UDS diagnostics
 bash tools/generate-autoas-rte.sh      # upstream Gauge/Telltale SWC ARXML and RTE headers
 bash tools/run-trampoline-posix.sh    # real Trampoline OS task/alarm exercise
+bash tools/run-mcu-simulators.sh      # real ARM firmware: STM32F407 OS, two STM32H743 CAN FD nodes
 ~~~
 
-These commands have been verified on the Arch host. The small teaching tests use a rootless UDP frame relay. The real AutoAS stack instead uses its upstream UDP-multicast Controller Area Network (CAN) simulator. Neither virtual transport models electrical arbitration, acknowledgment, error frames or physical bit timing. You can also run both real implementations together with `bash tools/run-real-autosar.sh`; source/toolchain locations are listed in [stacks](stacks/README.md) and [toolchains](toolchains/README.md).
+These commands have been verified on the Arch host. The **microcontroller simulation** stage uses pinned [Renode](https://renode.io/): genuine Cortex-M4 Trampoline firmware drives an emulated STM32F407 LED, and two distinct Cortex-M7 STM32H743 firmware programs exchange a 16-byte CAN FD frame plus an 8-byte Classical CAN reply. [See the step-by-step MCU emulation guide](docs/12-mcu-simulation.md). The small teaching tests use a rootless UDP frame relay. The real AutoAS stack instead uses its upstream UDP-multicast Controller Area Network (CAN) simulator. Neither virtual transport models electrical arbitration, acknowledgment, error frames or physical bit timing. You can also run both real implementations together with `bash tools/run-real-autosar.sh`; source/toolchain locations are listed in [stacks](stacks/README.md) and [toolchains](toolchains/README.md).
 
 If your running Linux kernel provides a working `vcan` driver, use SocketCAN instead:
 
@@ -52,12 +53,12 @@ The guides use **full technical names inline**, rather than making the reader se
 
 | Directory | Contents |
 | --- | --- |
-| `docs/` | Twelve numbered tutorials: layers, components, ports, scheduling, protocols, diagnostic bytes, real Basic Software (BSW) compilation, debugging and MCU deployment. |
+| `docs/` | Thirteen numbered tutorials: layers, components, ports, scheduling, protocols, diagnostic bytes, real Basic Software (BSW) compilation, debugging and MCU deployment. |
 | `src/core/` | Hardware-independent C11 teaching code: runnable, encoded signal, simplified transport and diagnostic state. |
 | `src/host/` and `src/platform/` | Linux process and switchable UDP / SocketCAN backend. |
 | `src/tests/` and `tools/` | Deterministic tests, frame relay, diagnostic client, cross-compile checks, glossary/link linting and reproducible scripts. |
 | `config/` | Educational message identifier `0x201` and diagnostic identifiers `0x7E0`/`0x7E8`. Not generated AUTOSAR configuration. |
-| `hardware/` | Board-specific checklists for STM32H723 and AT32M416, including transceiver wiring and CAN FD bring-up. |
+| `hardware/` | Board-specific checklists for STM32H723 and AT32M416, including transceiver wiring, CAN FD bring-up and reproducible Renode Cortex-M4/M7 firmware simulations. |
 | `examples/` | Independent Trampoline and AutoAS exercises; external source remains under ignored `third_party/`. |
 | `stacks/` and `toolchains/` | Actual upstream source map, pinned build dependencies, setup and compilation workflow. |
 
@@ -73,6 +74,7 @@ Begin with [docs/00-learning-path.md](docs/00-learning-path.md). Each stage give
 | Actual AutoAS Basic Software (BSW) | Built upstream `CanApp`, `libAsOne.so` and `IsoTpSend` with SCons. Verified `10 01 → 50 01 ...`, `10 03 → 50 03 ...`, and 13-byte diagnostic response `22 F1 5B → 62 F1 5B ...` via genuine ISO-TP segmentation. |
 | Upstream software-component generation | Ran AutoAS Gauge and Telltale Runtime Environment (RTE) generators: 10 parseable AUTOSAR XML (ARXML) documents and two `Rte_*.h` interface headers. Not linked into the existing host Electronic Control Unit (ECU); ModeSwitchInterface unsupported warning remains. |
 | Portability | The core C sources compiled for Arm Cortex-M7 and Cortex-M4 **as objects only**. |
+| Actual MCU firmware execution in Renode | Trampoline STM32F407 OS firmware toggled GPIO D15 four times in 2.7 emulated seconds; two STM32H743 CPU/FDCAN firmware images exchanged CAN FD (16 bytes) and Classical CAN (8 bytes). **Not a model of the exact H723/AT32M416 physical boards.** |
 | Physical boards | **Not yet linked, flashed or validated.** Needs exact vendor startup files, Hardware Abstraction Layer (HAL) or genuine AUTOSAR Microcontroller Abstraction Layer (MCAL) ports, pin mappings, CAN FD transceivers and measurements. |
 
 The MIT license applies to code authored in this repository. Trampoline and AutoAS have their **own** licenses and are not bundled into this Git tree. Do not put credentials or private vendor Software Development Kit (SDK) code in the repo. Use isolated bench hardware without live actuators for CAN and diagnostic experiments.

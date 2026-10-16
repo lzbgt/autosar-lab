@@ -30,9 +30,10 @@ We use three independent tracks:
 | L3 (1–2 h) | Enable FD payload mode; if available, repeat with SocketCAN vcan | Distinguish FD data phase / Data Length Code (DLC) from simulated UDP |
 | L4 (half-day) | Run Trampoline Portable Operating System Interface (POSIX) example with tasks/alarms; read OSEK Implementation Language (OIL) or AUTOSAR XML (ARXML) | Identify task, alarm, counter, GOIL-produced config |
 | L5 (half-day) | Trace real Basic Software (BSW) in AutoAS and its documented diagnostic demo | Draw Diagnostic Communication Manager (Dcm) ⇄ Protocol Data Unit Router (PduR) ⇄ CAN Transport Layer (CanTp) ⇄ CAN Interface (CanIf) ⇄ Can |
-| L6 (1–2 days) | Build vendor Hardware Abstraction Layer (HAL) Controller Area Network (CAN) 2.0 on H723 and M416, observe packets | Verified two-node communication at 500 kbit/s |
-| L7 (1–2 days) | Enable ISO Controller Area Network Flexible Data-Rate (CAN FD) 500 kbit/s nominal + 2 Mbit/s data | Frame trace + error counters + handling tests |
-| L8 (advanced) | Integrate Operating System (OS), configuration, Microcontroller Abstraction Layer (MCAL) and Basic Software (BSW) on Microcontroller Unit (MCU) | Real task scheduling, memory map and diagnostic timing metrics |
+| L6 (emulated MCU) | Run the real Trampoline Cortex-M4 OS on virtual STM32F407 and real Cortex-M7 register-level CAN FD sender/receiver firmware on two virtual STM32H743s | GPIO D15 task transitions and paired `0xCAFEFD10` / `0xCAFECC08` diagnostic memory markers; no physical bit-rate claim |
+| L7 (1–2 days) | Build vendor Hardware Abstraction Layer (HAL) Controller Area Network (CAN) 2.0 on H723 and M416, observe packets | Verified two-node communication at 500 kbit/s |
+| L8 (1–2 days) | Enable ISO Controller Area Network Flexible Data-Rate (CAN FD) 500 kbit/s nominal + 2 Mbit/s data | Frame trace + error counters + handling tests |
+| L9 (advanced) | Integrate Operating System (OS), configuration, Microcontroller Abstraction Layer (MCAL) and Basic Software (BSW) on Microcontroller Unit (MCU) | Real task scheduling, memory map and diagnostic timing metrics |
 
 Times are suggested study effort, not promises of automatic completion.
 
@@ -49,6 +50,7 @@ Times are suggested study effort, not promises of automatic completion.
 9. `09-glossary-and-references.md` — definitions and official reading.
 10. `10-troubleshooting.md` — common failures and a debug decision tree.
 11. `11-real-autosar-stack.md` — compile real AutoAS Basic Software (BSW), run its configuration generators, and verify actual Unified Diagnostic Services (UDS) transport.
+12. `12-mcu-simulation.md` — install Renode, compile genuine Cortex-M4 Trampoline firmware, exchange Controller Area Network Flexible Data-Rate (CAN FD) frames through two emulated Cortex-M7 controllers, and verify real peripheral registers.
 
 ## How to practice effectively
 

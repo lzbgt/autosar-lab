@@ -2,6 +2,8 @@
 
 **Current status:** Portable C core compiled on the Arch host for Cortex-M7 and Cortex-M4. This is **not** board flash or real Controller Area Network (CAN) verification. Microcontroller Unit (MCU) drivers and board wiring remain to be integrated, and no claim of a working AUTOSAR Electronic Control Unit (ECU) on physical hardware is made.
 
+**Pre-hardware integration gate:** Before connecting transceivers, run [the Renode MCU and CAN FD exercise](12-mcu-simulation.md) with `bash tools/run-mcu-simulators.sh`. It compiles real Cortex-M4 Trampoline Operating System (OS) firmware for virtual STM32F407 and performs bidirectional CAN FD/Classical CAN transfer between two virtual STM32H743 Cortex-M7 chips. It is not an exact STM32H723 or AT32M416 board/peripheral model.
+
 ## Microcontroller Unit (MCU) roles
 
 | Role | Part | Core / resources | Rationale |

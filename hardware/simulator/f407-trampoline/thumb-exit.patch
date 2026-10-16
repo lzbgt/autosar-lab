@@ -1,0 +1,14 @@
+diff --git a/examples/cortex-m/armv7em/stm32f407/stm32f4discovery/blink/blink.c b/examples/cortex-m/armv7em/stm32f407/stm32f4discovery/blink/blink.c
+index c58fe1c..444c129 100644
+--- a/examples/cortex-m/armv7em/stm32f407/stm32f4discovery/blink/blink.c
++++ b/examples/cortex-m/armv7em/stm32f407/stm32f4discovery/blink/blink.c
+@@ -47,3 +47,9 @@ FUNC(void, OS_CODE) PostTaskHook()
+ #define OS_STOP_SEC_CODE
+ #include "tpl_memmap.h"
+
++
++/* autosar-lab: Cortex-M Thumb _exit used only if StartOS returns. */
++__attribute__((noreturn)) void _exit(int status) {
++  (void)status;
++  for (;;) { __asm volatile("wfi"); }
++}

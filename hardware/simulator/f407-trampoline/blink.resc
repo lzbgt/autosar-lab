@@ -1,0 +1,23 @@
+# Actual Trampoline STM32F407 OS binary, linked with pinned CMSIS and thumb-safe exit shim.
+# Sampling GPIO D15 (blue LED) proves periodic task execution under emulation.
+mach create "f407"
+machine LoadPlatformDescription @platforms/boards/stm32f4_discovery.repl
+sysbus LoadELF @third_party/trampoline/examples/cortex-m/armv7em/stm32f407/stm32f4discovery/blink/blink_exe
+emulation RunFor "0.3"
+sysbus ReadDoubleWord 0x40020C14
+emulation RunFor "0.3"
+sysbus ReadDoubleWord 0x40020C14
+emulation RunFor "0.3"
+sysbus ReadDoubleWord 0x40020C14
+emulation RunFor "0.3"
+sysbus ReadDoubleWord 0x40020C14
+emulation RunFor "0.3"
+sysbus ReadDoubleWord 0x40020C14
+emulation RunFor "0.3"
+sysbus ReadDoubleWord 0x40020C14
+emulation RunFor "0.3"
+sysbus ReadDoubleWord 0x40020C14
+emulation RunFor "0.3"
+sysbus ReadDoubleWord 0x40020C14
+emulation RunFor "0.3"
+sysbus ReadDoubleWord 0x40020C14

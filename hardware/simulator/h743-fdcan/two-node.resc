@@ -1,0 +1,26 @@
+# Two STM32H743 Cortex-M7 virtual microcontrollers on Renode's internal CANHub.
+# No Linux vcan or physical transceiver needed. Both run real ARM ELF firmware.
+emulation CreateCANHub "canHub"
+
+mach create "sender"
+machine LoadPlatformDescription @platforms/cpus/stm32h743.repl
+sysbus LoadELF @build/emu/h743-fdcan/sender.elf
+connector Connect fdcan1 canHub
+
+mach create "receiver"
+machine LoadPlatformDescription @platforms/cpus/stm32h743.repl
+sysbus LoadELF @build/emu/h743-fdcan/receiver.elf
+connector Connect fdcan1 canHub
+
+emulation SetGlobalQuantum "0.000025"
+emulation RunFor "0.35"
+
+mach set "sender"
+sysbus ReadDoubleWord 0x24000000
+sysbus ReadDoubleWord 0x24000004
+sysbus ReadDoubleWord 0x24000018
+
+mach set "receiver"
+sysbus ReadDoubleWord 0x24000000
+sysbus ReadDoubleWord 0x24000010
+sysbus ReadDoubleWord 0x24000014

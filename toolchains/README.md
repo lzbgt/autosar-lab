@@ -110,3 +110,15 @@ Source references:
 [AutoAS](https://github.com/autoas/as),
 [Trampoline](https://github.com/TrampolineRTOS/trampoline),
 [Classic Platform architecture](https://www.autosar.org/standards/classic-platform/).
+
+## STM32 and CAN FD emulation (Renode)
+
+Use the pinned official Renode 1.17.0 portable release, installed inside the project and checked with a fixed SHA-256 checksum:
+
+~~~sh
+cd ~/work/autosar-lab
+bash tools/install-renode.sh
+bash tools/run-mcu-simulators.sh
+~~~
+
+The ARM GNU toolchain builds actual Trampoline Cortex-M4 firmware for virtual STM32F407 and separate Cortex-M7 firmware using real message-RAM Controller Area Network Flexible Data-Rate (CAN FD) controller registers on two virtual STM32H743s. See [step-by-step emulator setup](../docs/12-mcu-simulation.md). The emulation does not prove physical transceiver timing, the precise STM32H723 register map, or an integrated AutoAS Basic Software (BSW) plus Trampoline ECU firmware image.
