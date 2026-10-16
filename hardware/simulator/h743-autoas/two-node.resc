@@ -1,0 +1,30 @@
+# Genuine upstream AutoAS CanIf compiled into two STM32H743 Cortex-M7 ELFs.
+# Peripheral model: Renode 1.17 CAN.MCAN (not the exact STM32H723 target).
+emulation CreateCANHub "canHub"
+
+mach create "sender"
+machine LoadPlatformDescription @platforms/cpus/stm32h743.repl
+sysbus LoadELF @build/emu/h743-autoas/sender.elf
+connector Connect fdcan1 canHub
+
+mach create "receiver"
+machine LoadPlatformDescription @platforms/cpus/stm32h743.repl
+sysbus LoadELF @build/emu/h743-autoas/receiver.elf
+connector Connect fdcan1 canHub
+
+emulation SetGlobalQuantum "0.000025"
+emulation RunFor "0.40"
+
+mach set "sender"
+sysbus ReadDoubleWord 0x24000000
+sysbus ReadDoubleWord 0x24000014
+sysbus ReadDoubleWord 0x2400001C
+sysbus ReadDoubleWord 0x24000020
+sysbus ReadDoubleWord 0x24000024
+
+mach set "receiver"
+sysbus ReadDoubleWord 0x24000000
+sysbus ReadDoubleWord 0x24000014
+sysbus ReadDoubleWord 0x2400001C
+sysbus ReadDoubleWord 0x24000020
+sysbus ReadDoubleWord 0x24000024

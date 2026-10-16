@@ -1,0 +1,29 @@
+# Genuine AutoAS CanTp + CanIf on virtual H743s; PduR/Dcm are not linked.
+emulation CreateCANHub "canHub"
+
+mach create "tester"
+machine LoadPlatformDescription @platforms/cpus/stm32h743.repl
+sysbus LoadELF @build/emu/h743-autoas-tp/tester.elf
+connector Connect fdcan1 canHub
+
+mach create "server"
+machine LoadPlatformDescription @platforms/cpus/stm32h743.repl
+sysbus LoadELF @build/emu/h743-autoas-tp/server.elf
+connector Connect fdcan1 canHub
+
+emulation SetGlobalQuantum "0.000025"
+emulation RunFor "1.0"
+
+mach set "tester"
+sysbus ReadDoubleWord 0x24000000
+sysbus ReadDoubleWord 0x2400001C
+sysbus ReadDoubleWord 0x24000020
+sysbus ReadDoubleWord 0x24000024
+sysbus ReadDoubleWord 0x24000028
+
+mach set "server"
+sysbus ReadDoubleWord 0x24000000
+sysbus ReadDoubleWord 0x2400001C
+sysbus ReadDoubleWord 0x24000020
+sysbus ReadDoubleWord 0x24000024
+sysbus ReadDoubleWord 0x24000028
