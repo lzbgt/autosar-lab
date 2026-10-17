@@ -121,7 +121,7 @@ bash tools/install-renode.sh
 bash tools/run-mcu-simulators.sh
 ~~~
 
-The ARM GNU toolchain builds actual Trampoline Cortex-M4 firmware for virtual STM32F407 and separate Cortex-M7 firmware using real message-RAM Controller Area Network Flexible Data-Rate (CAN FD) controller registers on two virtual STM32H743s. See [step-by-step emulator setup](../docs/12-mcu-simulation.md). The emulation does not prove physical transceiver timing, the precise STM32H723 register map, or an integrated AutoAS Basic Software (BSW) plus Trampoline Electronic Control Unit (ECU) firmware image.
+The ARM GNU toolchain builds actual Trampoline Cortex-M4 firmware for virtual STM32F407 and separate Cortex-M7 firmware using real message-RAM Controller Area Network Flexible Data-Rate (CAN FD) controller registers on two virtual STM32H743s. See [step-by-step emulator setup](../docs/12-mcu-simulation.md). The emulation does not prove physical transceiver timing or the precise STM32H723 register map. **The previously separate Trampoline and AutoAS modules have now been linked and verified in one STM32H743 firmware** in [chapter 16](../docs/16-trampoline-autoas-one-ecu.md), but this does not prove AUTOSAR conformance or physical-board operation.
 
 The next stage is also executable: `bash tools/run-real-autoas-mcu.sh` compiles genuine AutoAS CAN Interface (CanIf), CAN Transport Layer (CanTp), and Protocol Data Unit Router (PduR) modules into ARM Cortex-M7 firmware and verifies a segmented diagnostic response across two Renode M_CAN controllers. [Actual modules, configuration and limitations](../docs/13-real-autoas-mcu.md). The target driver adapter is **not** a compliant Microcontroller Abstraction Layer (MCAL).
 

@@ -20,6 +20,7 @@ bash tools/run-trampoline-posix.sh    # real Trampoline OS task/alarm exercise
 bash tools/run-mcu-simulators.sh      # Cortex-M4 OS, CAN FD, real AutoAS BSW on Cortex-M7
 bash tools/run-h743-autoas-dcm.sh     # genuine Dcm: fingerprint, session and negative UDS
 bash tools/run-h743-autoas-fault.sh   # measured missing Flow Control timeout and same-ECU recovery
+bash tools/run-h743-trampoline-autoas.sh # genuine Trampoline-scheduled AutoAS diagnostics in one MCU
 ~~~
 
 These commands have been verified on the Arch host. For the genuine embedded communication path, run `bash tools/run-real-autoas-mcu.sh` and read [the source-level integration walkthrough](docs/13-real-autoas-mcu.md). The **microcontroller simulation** stage uses pinned [Renode](https://renode.io/): genuine Cortex-M4 Trampoline firmware drives an emulated STM32F407 LED, and two distinct Cortex-M7 STM32H743 firmware programs exchange a 16-byte CAN FD frame plus an 8-byte Classical CAN reply. [See the step-by-step MCU emulation guide](docs/12-mcu-simulation.md). The small teaching tests use a rootless UDP frame relay. The real AutoAS stack instead uses its upstream UDP-multicast Controller Area Network (CAN) simulator. Neither virtual transport models electrical arbitration, acknowledgment, error frames or physical bit timing. You can also run both real implementations together with `bash tools/run-real-autosar.sh`; source/toolchain locations are listed in [stacks](stacks/README.md) and [toolchains](toolchains/README.md).
@@ -55,7 +56,7 @@ The guides use **full technical names inline**, rather than making the reader se
 
 | Directory | Contents |
 | --- | --- |
-| `docs/` | Sixteen numbered tutorials: architecture, scheduling, protocols, real Basic Software (BSW), embedded diagnostics, debugging and hardware deployment. |
+| `docs/` | Seventeen numbered tutorials: architecture, scheduling, protocols, real Basic Software (BSW), embedded diagnostics, debugging and hardware deployment. |
 | `src/core/` | Hardware-independent C11 teaching code: runnable, encoded signal, simplified transport and diagnostic state. |
 | `src/host/` and `src/platform/` | Linux process and switchable UDP / SocketCAN backend. |
 | `src/tests/` and `tools/` | Deterministic tests, frame relay, diagnostic client, cross-compile checks, glossary/link linting and reproducible scripts. |
@@ -80,6 +81,7 @@ Begin with [docs/00-learning-path.md](docs/00-learning-path.md). Each stage give
 | Actual AutoAS communication modules on Cortex-M7 | [Chapter 13](docs/13-real-autoas-mcu.md) verifies unchanged AutoAS CAN Interface (CanIf), CAN Transport Layer (CanTp), and Protocol Data Unit Router (PduR) code in two ARM firmware images, transferring a segmented 13-byte diagnostic response over modeled FDCAN. The Diagnostic Communication Manager (Dcm) is not linked into these images. |
 | Genuine Diagnostic Communication Manager (Dcm) on Cortex-M7 | [Chapter 14](docs/14-real-dcm-mcu.md) verifies unmodified AutoAS Diagnostic Communication Manager (Dcm), Diagnostic Service Dispatcher (Dsd), Diagnostic Session Layer (Dsl) and Diagnostic Service Processing (Dsp) modules: positive fingerprint read, extended-session control, and unsupported-DID negative response, all over real transport modules. |
 | Real transport fault recovery on Cortex-M7 | [Chapter 15](docs/15-iso-tp-fault-recovery.md) verifies a dropped ISO-TP Flow Control frame, genuine 1,000 ms AutoAS timeout, diagnostic-buffer release and a subsequent successful session request on the same running server. |
+| Single emulated OS + diagnostic firmware | [Chapter 16](docs/16-trampoline-autoas-one-ecu.md) compiles real Trampoline Operating System (OS) tasks and real AutoAS CAN Interface (CanIf), CAN Transport Layer (CanTp), Protocol Data Unit Router (PduR) and Diagnostic Communication Manager (Dcm) in **one Cortex-M7 ELF**. Three independent Unified Diagnostic Services (UDS) responses and approximately 1,219 one-millisecond task activations were verified. |
 | Physical boards | **Not yet linked, flashed or validated.** Needs exact vendor startup files, Hardware Abstraction Layer (HAL) or genuine AUTOSAR Microcontroller Abstraction Layer (MCAL) ports, pin mappings, CAN FD transceivers and measurements. |
 
 The MIT license applies to code authored in this repository. Trampoline and AutoAS have their **own** licenses and are not bundled into this Git tree. Do not put credentials or private vendor Software Development Kit (SDK) code in the repo. Use isolated bench hardware without live actuators for CAN and diagnostic experiments.

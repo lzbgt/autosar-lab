@@ -12,4 +12,6 @@ echo "=== Genuine AutoAS Diagnostic Communication Manager on Cortex-M7 ==="
 bash tools/run-h743-autoas-dcm.sh
 echo "=== Real CAN Transport Layer missing Flow Control and same-server recovery ==="
 bash tools/run-h743-autoas-fault.sh
-echo "PASS: Trampoline OS, Cortex-M7 CAN FD, genuine AutoAS diagnostics and N_Bs timeout/recovery"
+echo "=== Single STM32H743 Trampoline Operating System + genuine AutoAS diagnostics ==="
+bash tools/run-h743-trampoline-autoas.sh
+echo "PASS: Trampoline OS, Cortex-M7 CAN FD, genuine AutoAS diagnostics, N_Bs timeout/recovery and combined real-time firmware"

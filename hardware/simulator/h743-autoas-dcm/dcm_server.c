@@ -33,6 +33,7 @@
 #define SYSTICK_RESET_CLOCK_HZ 64000000u
 #define SYSTICK_ONE_MS_RELOAD (SYSTICK_RESET_CLOCK_HZ / 1000u - 1u)
 static volatile uint32_t systick_ms;
+#ifndef AUTOAS_TRAMPOLINE_OS
 void SysTick_Handler(void)
 {
     systick_ms++;
@@ -45,6 +46,8 @@ static void start_systick(void)
     SYSTICK_VAL = 0u;
     SYSTICK_CTRL = 7u; /* ENABLE, TICKINT, CLKSOURCE=CPU */
 }
+
+#endif /* standalone board SysTick */
 
 static uint8_t tp_data[64];
 static CanTp_ChannelContextType tp_context[1];
@@ -112,7 +115,8 @@ const PduR_ConfigType PduR_Config = {
     .RoutingPaths = paths, .numOfRoutingPaths = 2u,
 };
 
-int main(void)
+/* BSW services share identical initialization and work in bare-metal and RTOS modes. */
+void AutoAS_BswInit(void)
 {
     volatile uint32_t *const diag = MCU_DEBUG;
 #ifdef AUTOAS_TEST_DROP_FC
@@ -131,27 +135,30 @@ int main(void)
         for(;;) { __asm__ volatile("wfi"); }
     }
     diag[0] = 0x70000004u;
-    start_systick();
-    uint32_t serviced_ms = 0u;
-    for(;;) {
-        mcan_board_poll();
-        /* Interrupt tracks real emulated millisecond ticks. All BSW work
-         * stays in main context to avoid concurrent service reentrancy. */
-        const uint32_t sampled_ms = systick_ms;
-        while(serviced_ms != sampled_ms) {
-            serviced_ms++;
-            CanTp_MainFunction_Fast();
-            diag[17]++;
-            if((serviced_ms % 10u) == 0u) {
-                CanTp_MainFunction();
-                Dcm_MainFunction();
-                diag[18]++;
-            }
-        }
+
+}
+void AutoAS_BswPoll(void) { mcan_board_poll(); }
+void AutoAS_BswTick1ms(void)
+{
+#ifdef AUTOAS_TRAMPOLINE_OS
+    systick_ms++;
+    MCU_DEBUG[16] = systick_ms;
+#endif
+    CanTp_MainFunction_Fast();
+    MCU_DEBUG[17]++;
+    if((MCU_DEBUG[17] % 10u) == 0u) {
+        CanTp_MainFunction();
+        Dcm_MainFunction();
+        MCU_DEBUG[18]++;
+    }
+}
+void AutoAS_BswUpdate(void)
+{
+    volatile uint32_t *const diag = MCU_DEBUG;
         /* Mark success only after real Dcm response transport has confirmed.
          * Exact contents and ISO-TP framing are checked independently on
          * the tester MCU. No success marker is based on transmit-request alone. */
-        Dcm_ContextType *context = Dcm_GetContext();
+    Dcm_ContextType *context = Dcm_GetContext();
 #ifdef AUTOAS_TEST_DROP_FC
         /* An FC arrives in real M_CAN RX FIFO but board_mcan.c suppresses
          * forwarding to CanIf. Observe upstream CanTp WAIT_FIRST_FC and
@@ -195,9 +202,26 @@ int main(void)
             }
         }
 #endif
+
+}
+#ifndef AUTOAS_TRAMPOLINE_OS
+int main(void)
+{
+    AutoAS_BswInit();
+    start_systick();
+    uint32_t serviced_ms = 0u;
+    for(;;) {
+        AutoAS_BswPoll();
+        const uint32_t sampled_ms = systick_ms;
+        while(serviced_ms != sampled_ms) {
+            serviced_ms++;
+            AutoAS_BswTick1ms();
+        }
+        AutoAS_BswUpdate();
         mcan_board_delay(1000u);
     }
 }
+#endif
 void *memset(void *dst, int value, size_t n)
 {
     uint8_t *p = (uint8_t *)dst;

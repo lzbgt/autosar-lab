@@ -34,6 +34,7 @@ We use three independent tracks:
 | L6.1 (real embedded Basic Software) | Compile AutoAS CAN Interface (CanIf), CAN Transport Layer (CanTp), and Protocol Data Unit Router (PduR) from genuine upstream code for two virtual STM32H743 Cortex-M7 processors | CAN FD and Classical CAN routing; real transport segmentation/reassembly; both hardware SRAM success markers and no development-error reports |
 | L6.2 (real embedded diagnostics) | Run genuine AutoAS Diagnostic Communication Manager (Dcm), Diagnostic Service Dispatcher (Dsd), Diagnostic Session Layer (Dsl) and Diagnostic Service Processing (Dsp) on a virtual STM32H743 | Verify `22 F1 5B`, `10 03` and `22 F1 99` responses with independent CPU memory and CAN-frame counters |
 | L6.3 (transport timeout and recovery) | Suppress a real emulated CAN Flow Control frame at the server driver boundary and verify the AutoAS CAN Transport Layer (CanTp) timeout, Diagnostic Communication Manager (Dcm) cleanup and a later successful session without a reboot | Measured N_Bs = 1,000 ms; independent successful recovery tester; rejected corrupted traces |
+| L6.4 (one real-time OS and diagnostic firmware) | Run actual Trampoline Operating System (OS) generated one-millisecond OSEK Implementation Language (OIL) task with genuine AutoAS Basic Software (BSW) modules linked into the **same** virtual STM32H743 ELF | Three validated Unified Diagnostic Services (UDS) responses, 1,219 task activations and 121 ten-millisecond diagnostic service executions |
 | L7 (1–2 days) | Build vendor Hardware Abstraction Layer (HAL) Controller Area Network (CAN) 2.0 on H723 and M416, observe packets | Verified two-node communication at 500 kbit/s |
 | L8 (1–2 days) | Enable ISO Controller Area Network Flexible Data-Rate (CAN FD) 500 kbit/s nominal + 2 Mbit/s data | Frame trace + error counters + handling tests |
 | L9 (advanced) | Integrate Operating System (OS), configuration, Microcontroller Abstraction Layer (MCAL) and Basic Software (BSW) on Microcontroller Unit (MCU) | Real task scheduling, memory map and diagnostic timing metrics |
@@ -57,6 +58,7 @@ Times are suggested study effort, not promises of automatic completion.
 13. `13-real-autoas-mcu.md` — execute actual AutoAS Basic Software (BSW) CAN Interface (CanIf), CAN Transport Layer (CanTp), and Protocol Data Unit Router (PduR) in Cortex-M7 firmware with real configured routing and a segmented diagnostic transfer.
 14. `14-real-dcm-mcu.md` — link actual AutoAS Diagnostic Communication Manager (Dcm) and test correct DID, session and negative responses on emulated ARM firmware.
 15. `15-iso-tp-fault-recovery.md` — inject missing Flow Control at a virtual Controller Area Network (CAN) driver, measure real N_Bs timeout and verify the same Electronic Control Unit (ECU) recovers without reboot.
+16. `16-trampoline-autoas-one-ecu.md` — generate real OSEK tasks, compile genuine Trampoline Operating System (OS) and AutoAS Basic Software (BSW) in one virtual Cortex-M7 firmware, and verify three diagnostic services and timing.
 
 ## How to practice effectively
 
