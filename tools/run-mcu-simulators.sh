@@ -14,4 +14,6 @@ echo "=== Real CAN Transport Layer missing Flow Control and same-server recovery
 bash tools/run-h743-autoas-fault.sh
 echo "=== Single STM32H743 Trampoline Operating System + genuine AutoAS diagnostics ==="
 bash tools/run-h743-trampoline-autoas.sh
-echo "PASS: Trampoline OS, Cortex-M7 CAN FD, genuine AutoAS diagnostics, N_Bs timeout/recovery and combined real-time firmware"
+echo "=== Trampoline Operating System-scheduled real CAN Transport Layer timeout and same-server recovery ==="
+bash tools/run-h743-trampoline-autoas-fault.sh
+echo "PASS: real Trampoline OS and AutoAS stack with all UDS services, ISO-TP N_Bs timeout and same-server recovery"

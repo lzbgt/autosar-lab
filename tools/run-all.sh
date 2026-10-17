@@ -10,6 +10,7 @@ python3 tools/check-docs.py
 python3 tools/check-autoas-dcm.py --self-test
 python3 tools/test-autoas-fc-loss.py --self-test
 python3 tools/test-h743-trampoline-autoas.py --self-test
+python3 tools/test-h743-trampoline-autoas-fault.py --self-test
 python3 tools/smoke.py --backend udp --build-dir build
 python3 tools/smoke.py --backend udp --fd --build-dir build
 if command -v arm-none-eabi-gcc >/dev/null; then

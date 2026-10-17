@@ -2,6 +2,10 @@
 # Generate and cross-build real Trampoline OSEK OS with a 1ms periodic task.
 # Uses upstream ARMv7E-M generic kernel and GOIL; ONLY the board shim is ours.
 set -euo pipefail
+case "${1:-}" in
+  ""|--with-fault) ;;
+  *) echo "Usage: bash tools/build-h743-trampoline-autoas.sh [--with-fault]" >&2; exit 2 ;;
+esac
 root="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$root"
 tr="$root/third_party/trampoline"
@@ -118,3 +122,40 @@ for name in StartOS tpl_reset_handler tpl_primary_irq_handler_SysTick \
 done
 echo "PASS: genuine Trampoline OSEK task + real AutoAS Dcm/CanTp/PduR/CanIf in one STM32H743 ELF"
 arm-none-eabi-size "$out/trampoline_autoas.elf"
+
+
+if [[ "${1:-}" == "--with-fault" ]]; then
+  # The fault variant keeps the same Trampoline scheduler and upstream
+  # AutoAS modules. Only the board-specific adapter and service shim differ.
+  arm-none-eabi-gcc "${flags[@]}" "${autoas_inc[@]}" \
+    -DAUTOAS_TRAMPOLINE_OS -DAUTOAS_TEST_DROP_FC -DUSE_DET \
+    -DSTD_NO_ERRNO_H -c \
+    "$root/hardware/simulator/h743-autoas-dcm/dcm_server.c" \
+    -o "$out/obj/autoas_bsw_runtime_fc_loss.o"
+  arm-none-eabi-gcc "${flags[@]}" "${autoas_inc[@]}" \
+    -DAUTOAS_TEST_DROP_FC -DUSE_DET -DSTD_NO_ERRNO_H -c \
+    "$root/hardware/simulator/h743-autoas/board_mcan.c" \
+    -o "$out/obj/board_mcan_fc_loss.o"
+
+  # Replace exactly the two project-owned objects for the fault variant.
+  fault_objects=()
+  for obj in "${objects[@]}"; do
+    case "$obj" in
+      "$out/obj/autoas_bsw_runtime.o"|"$root/build/emu/h743-autoas-dcm/board_mcan.o") ;;
+      *) fault_objects+=("$obj") ;;
+    esac
+  done
+  fault_objects+=("$out/obj/autoas_bsw_runtime_fc_loss.o"
+                  "$out/obj/board_mcan_fc_loss.o")
+  arm-none-eabi-gcc -mcpu=cortex-m7 -mthumb -mfloat-abi=soft -nostdlib \
+    "-Wl,-T,$src/memory.ld" -Wl,--gc-sections \
+    "${fault_objects[@]}" -lgcc \
+    -o "$out/trampoline_autoas-fc-loss.elf"
+  arm-none-eabi-nm "$out/trampoline_autoas-fc-loss.elf" >"$out/fault-symbols.txt"
+  for name in StartOS bsw_tick_function CanTp_MainFunction \
+              Dcm_MainFunction CanIf_RxIndication; do
+    grep -q " T $name$" "$out/fault-symbols.txt"
+  done
+  echo "PASS: genuine Trampoline+AutoAS ECU with fault-injected M_CAN receive boundary"
+  arm-none-eabi-size "$out/trampoline_autoas-fc-loss.elf"
+fi

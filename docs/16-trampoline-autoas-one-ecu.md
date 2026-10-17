@@ -144,7 +144,42 @@ The acceptance checks reject false service success, missing real-time OS task ac
 
 **Startup ordering is important:** the real tester must transmit only after the server has started its Trampoline OS and configured its CAN controller. The Renode runner explicitly boots the server **20 ms before the tester**. Starting both simultaneously previously lost the first request before the server configured its CAN receive interface. This test uses a fixed initialization lead time; a production design should use an explicit controller-ready handshake rather than assuming all targets initialize in 20 ms.
 
-## 6. What remains outstanding
+## 6. Verify real transport timeout and recovery under Trampoline scheduling
+
+The original fault test in [chapter 15](15-iso-tp-fault-recovery.md) used a standalone, SysTick-driven diagnostic server. We now run the **same unmodified CAN Transport Layer (CanTp) and Diagnostic Communication Manager (Dcm) software under actual Trampoline task scheduling**.
+
+Execute:
+
+~~~sh
+cd ~/work/autosar-lab
+bash tools/run-h743-trampoline-autoas-fault.sh
+~~~
+
+The `--with-fault` build option compiles a separate `trampoline_autoas-fc-loss.elf` from the **same Trampoline-generated scheduler and upstream AutoAS modules**. It only recompiles the project-owned M_CAN adapter and Basic Software (BSW) service interface with a test-only flag, so a Flow Control frame already received in the M_CAN FIFO is withheld from the CAN Interface (CanIf). The normal combined-firmware executable remains separate and unchanged.
+
+| Real emulated-CPU observation | Lost-Flow-Control test | Timeout then recovery test |
+| --- | ---: | ---: |
+| Trampoline one-millisecond task executions | 1,369 | 1,519 |
+| Trampoline ten-millisecond diagnostic task intervals | 136 | 151 |
+| Raw Flow Control (FC) frames received and deliberately dropped | 1 | 1 |
+| CAN Transport Layer (CanTp) N_Bs elapsed time | 999 ms | 999 ms |
+| Diagnostic Communication Manager (Dcm) transmit buffer returned to idle | Yes | Yes |
+| Original 13-byte diagnostic reply incorrectly accepted | No | No |
+| New tester received `50 03 00 32 01 F4` on **same running server** | Not attempted | Yes |
+
+The configured timeout is 100 ten-millisecond executions, nominally `100 × 10 ms = 1,000 ms`. The CPU observer recorded 999 ms between sampling the wait and idle states: a one-millisecond sampling difference, **not evidence that the configured timeout was reduced**.
+
+The fault-only scenario verifies 30 emulated Static Random-Access Memory (SRAM) samples, including real received-frame types, upstream transport abort, CAN transmit confirmations, diagnostic-buffer cleanup, and independent Trampoline task counts. The recovery scenario verifies 41 CPU readings from the original tester, the still-running server, and a second independent tester. It requires the server status `0xFA17C003` and the new tester's fully validated `0xCAFE1003` result, **without restarting Trampoline or resetting the server**.
+
+The validator reuses the standalone-firmware transport assertions and additionally rejects mismatched operating-system task timing, missing Flow Control suppression, failed diagnostic cleanup, and false positive responses. You can run those checks without Renode:
+
+~~~sh
+python3 tools/test-h743-trampoline-autoas-fault.py --self-test
+~~~
+
+This demonstrates that the transport timeout and subsequent service recovery continue to work **with actual operating-system task scheduling**. It does not validate worst-case execution time on a physical microcontroller, CAN electrical error conditions, or AUTOSAR conformance.
+
+## 7. What remains outstanding
 
 This demonstration establishes **actual integrated execution** of Trampoline and AutoAS in one emulated Cortex-M7 firmware. It does not establish full AUTOSAR Classic Platform conformance, a standard Runtime Environment (RTE) connection, Microcontroller Abstraction Layer (MCAL) completeness, hardware execution deadlines, priority-inversion behavior, ISO-TP retransmission timing in all error cases, real CAN arbitration, physical transceivers or compatibility with your exact STM32H723 and AT32M416.
 
